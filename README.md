@@ -1,1 +1,1 @@
-# donation-tips
+# 寄付・チップ
