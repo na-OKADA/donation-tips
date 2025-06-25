@@ -16,6 +16,13 @@ const ENDPOINT = "https://node.testnet.casper.network/rpc"
 const NETWORK_NAME = "casper-test";
 ```
 
+以下のコマンドで、serverを起動します。
+
+```bash
+$ npm i
+$ npm start
+```
+
 また、src/SignerTest.jsの、下記部分は'casper-test'に設定します。
 
 ```SignerTest.js
@@ -28,6 +35,7 @@ const NETWORK_NAME = "casper-test";
 $ yarn install
 $ yarn start
 ```
+
 senderがCSPR(Testnet)を保有していることを確認し、実行を行います。
 
 動作確認を行うには、表示されたDeploy Hashを、[testnet.cspr.live](https://testnet.cspr.live/)で入力して確認します。
@@ -49,6 +57,13 @@ let networkName = "casper-net-1";
 
 ```SignerTest.js
 const NETWORK_NAME = "casper-net-1";
+```
+
+以下のコマンドで、serverを起動します。
+
+```bash
+$ npm i
+$ npm start
 ```
 
 次に、faucetアカウントのsecret_keyを、Signerにインポートします。
