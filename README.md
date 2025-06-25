@@ -1,18 +1,16 @@
 # Donation Tips
 
-CasperLabs Signerによる、transferを行うことができます。
+Casper Walletによる、transferを行うことができます。
 
 ## Testnetでの実行方法
 
-testnet.cspr.liveの[connected peers](https://testnet.cspr.live/tools/peers)より、ノードアドレスを取得します。
-
-src/setupProxy.jsのtarget部分を書き換え、ポート番号は7777に設定します。
+src/setupProxy.jsのtarget部分を https://node.testnet.casper.network/rpc に書き換えます。
 
 ```setupProxy.js
 app.use(
     '/testnet',
     createProxyMiddleware({
-        target: 'http://159.65.118.250:7777/rpc',
+        target: 'https://node.testnet.casper.network/rpc',
         changeOrigin: true,
     })
 );
@@ -69,13 +67,13 @@ let networkName = "casper-net-1";
 次に、faucetアカウントのsecret_keyを、Signerにインポートします。
 
 ```bash
-$ cat /casper-node/utils/nctl/assets/net-1/faucet/secret_key.pem
+$ cat /casper-nctl/assets/net-1/faucet/secret_key.pem
 ```
 
 送信先(user-1など)のpublic_key_hexを確認します。
 
 ```bash
-$ cat /casper-node/utils/nctl/assets/net-1/users/user-1/public_key_hex
+$ cat /casper-nctl/assets/net-1/users/user-1/public_key_hex
 ```
 
 以下のコマンドで、Reactフロントエンドアプリケーションを起動します。
@@ -90,11 +88,11 @@ senderをfaucetアカウントとし、受取人をuser-1に指定して実行�
 動作確認を行うには、表示されたDeploy Hashを使用して、デプロイ情報の取得を行います。
 
 ``` bash
-$ casper-client get-deploy --node-address http://localhost:11101 $DEPLOY_HASH
+$ casper-client get-transaction --node-address http://localhost:11101 $TRANSACTION_HASH
 ```
 
 ## ホワイトリスト
 
-Casper Labs Signerをlocalhost以外で使用するには、Casper Labsの認可を受ける必要があります。
+Casper Walletをlocalhost以外で使用するには、Casperの認可を受ける必要があります。
 
 https://github.com/casper-ecosystem/signer/blob/master/public/manifest.json#L22
