@@ -1,0 +1,28 @@
+/**
+ * Reads in a base64 private key, ignoring the header: `-----BEGIN PUBLIC KEY-----`
+ * and footer: `-----END PUBLIC KEY-----`
+ * @param {string} content A .pem private key string with a header and footer
+ * @returns A base64 private key as a `Uint8Array`
+ * @remarks
+ * If the provided base64 `content` string does not include a header/footer,
+ * it will pass through this function unaffected
+ * @example
+ * Example PEM:
+ *
+ * ```
+ * -----BEGIN PUBLIC KEY-----\r\n
+ * MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEj1fgdbpNbt06EY/8C+wbBXq6VvG+vCVD\r\n
+ * Nl74LvVAmXfpdzCWFKbdrnIlX3EFDxkd9qpk35F/kLcqV3rDn/u3dg==\r\n
+ * -----END PUBLIC KEY-----\r\n
+ * ```
+ */
+export declare function readBase64WithPEM(content: string): Uint8Array;
+/**
+ * Parses and validates a key in a certain range "from" to "to"
+ * @param {Uint8Array} bytes The key to be parsed and validated
+ * @param {number} from The starting index from which to parse the key
+ * @param {number} to The ending index from which to parse the key
+ * @returns The parsed key
+ * @throws `Error` if the key is of an unexpected length
+ */
+export declare const parseKey: (bytes: Uint8Array, from: number, to: number) => Uint8Array | Buffer;
