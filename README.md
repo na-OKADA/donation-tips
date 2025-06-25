@@ -19,6 +19,7 @@ const NETWORK_NAME = "casper-test";
 以下のコマンドで、serverを起動します。
 
 ```bash
+$ cd server
 $ npm i
 $ npm start
 ```
@@ -32,6 +33,7 @@ $ npm start
 以下のコマンドで、Reactフロントエンドアプリケーションを起動します。
 
 ```bash
+$ cd app
 $ yarn install
 $ yarn start
 ```
@@ -62,6 +64,7 @@ const NETWORK_NAME = "casper-net-1";
 以下のコマンドで、serverを起動します。
 
 ```bash
+$ cd server
 $ npm i
 $ npm start
 ```
@@ -81,6 +84,7 @@ $ cat /casper-nctl/assets/net-1/users/user-1/public_key_hex
 以下のコマンドで、Reactフロントエンドアプリケーションを起動します。
 
 ```bash
+$ cd app
 $ yarn install
 $ yarn start
 ```
