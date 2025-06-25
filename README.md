@@ -4,28 +4,22 @@ Casper Walletによる、transferを行うことができます。
 
 ## Testnetでの実行方法
 
-src/setupProxy.jsのtarget部分を https://node.testnet.casper.network/rpc に書き換えます。
+server/index.jsの下記部分を https://node.testnet.casper.network/rpc に書き換えます。
 
-```setupProxy.js
-app.use(
-    '/testnet',
-    createProxyMiddleware({
-        target: 'https://node.testnet.casper.network/rpc',
-        changeOrigin: true,
-    })
-);
+```index.js
+const ENDPOINT = "https://node.testnet.casper.network/rpc"
 ```
 
-次に、src/SignerTest.jsの、下記部分は'/testnet'に設定します。
+次に、NETWORK_NAMEは"casper-test"に設定します。
 
 ```SignerTest.js
-this.casperService = new CasperClient('/testnet')
+const NETWORK_NAME = "casper-test";
 ```
 
-また、networkNameは"casper-test"に設定します。
+また、src/SignerTest.jsの、下記部分は'casper-test'に設定します。
 
 ```SignerTest.js
-let networkName = "casper-test";
+.chainName('casper-test')
 ```
 
 以下のコマンドで、Reactフロントエンドアプリケーションを起動します。
@@ -40,28 +34,21 @@ senderがCSPR(Testnet)を保有していることを確認し、実行を行い�
 
 ## NCTLでの実行方法
 
-src/setupProxy.jsのtarget部分を、ターゲットノードアドレスに変更します。
+server/index.jsの下記部分を、ターゲットノードアドレスに変更します。
 
-```setupProxy.js
-app.use(
-    '/nctl',
-    createProxyMiddleware({
-        target: 'http://localhost:11101/rpc',
-        changeOrigin: true,
-    })
-);
+```index.js
+const ENDPOINT = "http://localhost:11103/rpc"
 ```
 
-次に、src/SignerTest.jsの、下記部分は'/nctl'に設定します。
-
-```SignerTest.js
-this.casperService = new CasperClient('/nctl')
-```
-
-また、networkNameは"casper-net-1"に設定します。
-
+次に、NETWORK_NAMEを"casper-net-1"に設定します。
 ```SignerTest.js
 let networkName = "casper-net-1";
+```
+
+また、src/SignerTest.jsの、下記部分は'casper-net-1'に設定します。
+
+```SignerTest.js
+const NETWORK_NAME = "casper-net-1";
 ```
 
 次に、faucetアカウントのsecret_keyを、Signerにインポートします。
