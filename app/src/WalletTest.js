@@ -1,36 +1,72 @@
 import React from "react";
-import "./SignerTest.css";
+import "./WalletTest.css";
 import {
   Alert,
   Button,
   TextField,
   Typography,
   Snackbar,
+  IconButton, 
+  InputAdornment, 
 } from "@mui/material";
 import {
   NativeTransferBuilder,
   PublicKey,
   TransactionV1
 } from "casper-js-sdk";
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 const NETWORK_NAME = "casper-net-1";
+const CopyableField = ({ label, value }) => (
+  <TextField
+    label={label}
+    variant="filled"
+    value={value}
+    disabled
+    fullWidth
+    style={{ marginTop: ".8em", backgroundColor: "white", borderRadius: ".6rem", wordBreak: "break-word" }}
+    InputProps={{
+      endAdornment: (
+        <InputAdornment position="end">
+          <IconButton
+            onClick={() => navigator.clipboard.writeText(value)}
+            edge="end"
+            size="small"
+          >
+            <ContentCopyIcon />
+          </IconButton>
+        </InputAdornment>
+      ),
+    }}
+  />
+);
 
-export default class SignerTest extends React.Component {
+export default class WalletTest extends React.Component {
   constructor() {
     super();
     this.state = {
       walletConnected: false,
-      signerLocked: true,
+      walletLocked: true,
       recipient: "",
       amount: "2.5",
       transferTag: "0",
       deployHash: "",
       signature: "",
+      currentNotification: { text: "", severity: "info" },
+      showAlert: false,
       deployProcessed: false,
       activeKey: "",
-      showAlert: false,
-      currentNotification: {},
     };
+  }
+
+  formatSignature(sig) {
+    if (!sig) return "";
+    if (sig instanceof Uint8Array) {
+      return Array.from(sig)
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
+    return sig; 
   }
 
   componentDidMount() {
@@ -43,7 +79,7 @@ export default class SignerTest extends React.Component {
             const pub = await provider.getActivePublicKey();
             this.setState({
               walletConnected: true,
-              signerLocked: false,
+              walletLocked: false,
               activeKey: pub,
             });
           } catch (err) {
@@ -62,7 +98,7 @@ export default class SignerTest extends React.Component {
         "casper-wallet:connected",
         (detail) => ({
           walletConnected: true,
-          signerLocked: false,
+          walletLocked: false,
           activeKey: detail.publicKey,
           currentNotification: { text: "Connected", severity: "success" },
         }),
@@ -70,7 +106,7 @@ export default class SignerTest extends React.Component {
       [
         "casper-wallet:unlocked",
         () => ({
-          signerLocked: false,
+          walletLocked: false,
           currentNotification: { text: "Wallet Unlocked", severity: "info" },
         }),
       ],
@@ -78,7 +114,7 @@ export default class SignerTest extends React.Component {
         "casper-wallet:disconnected",
         () => ({
           walletConnected: false,
-          signerLocked: true,
+          walletLocked: true,
           activeKey: "",
           currentNotification: { text: "Disconnected", severity: "info" },
         }),
@@ -86,7 +122,7 @@ export default class SignerTest extends React.Component {
       [
         "casper-wallet:locked",
         () => ({
-          signerLocked: true,
+          walletLocked: true,
           currentNotification: { text: "Wallet Locked", severity: "warning" },
         }),
       ],
@@ -127,7 +163,7 @@ export default class SignerTest extends React.Component {
 
       this.setState({
         walletConnected: true,
-        signerLocked: false,
+        walletLocked: false,
         activeKey: pub,
         currentNotification: { text: "Connected", severity: "success" },
         showAlert: true,
@@ -162,7 +198,7 @@ export default class SignerTest extends React.Component {
       .from(senderKey)
       .target(recipientKey)
       .amount(amountMotes)
-      .chainName("casper-net-1")
+      .chainName(NETWORK_NAME)
       .payment(10_000_000_000);
   
     if (transferId !== undefined && !isNaN(transferId)) {
@@ -244,12 +280,13 @@ export default class SignerTest extends React.Component {
         throw new Error(err.error || "Failed to send transaction");
       }
   
-      const deployHash = await response.text();
+      const deployHashRaw = await response.text();
+      const deployHash = deployHashRaw.replace(/^"|"$/g, ""); 
   
       this.setState({
         deployProcessed: true,
         deployHash,
-        signature: res.signature,
+        signature: signatureWithPrefix,
         currentNotification: { text: `Deploy sent: ${deployHash}`, severity: "success" },
         showAlert: true,
       });
@@ -260,6 +297,7 @@ export default class SignerTest extends React.Component {
       });
     }
   };    
+  
 
   render() {
     return (
@@ -281,7 +319,7 @@ export default class SignerTest extends React.Component {
         <header className="App-header">
           <Typography variant="h2">寄付・チップ</Typography>
           {this.state.walletConnected ? (
-            this.state.signerLocked ? (
+            this.state.walletLocked ? (
               <Typography>Please unlock Casper Wallet.</Typography>
             ) : (
               <Typography>Connected: {this.state.activeKey}</Typography>
@@ -301,52 +339,21 @@ export default class SignerTest extends React.Component {
               fullWidth
               style={{ marginTop: ".8em", backgroundColor: "white", borderRadius: ".6rem" }}
             />
-            <TextField
-              label="数量 (CSPR)"
-              type="number"
-              variant="filled"
-              value={this.state.amount}
-              onChange={(e) => this.setState({ amount: e.target.value })}
-              fullWidth
-              style={{ marginTop: ".8em", backgroundColor: "white", borderRadius: ".6rem" }}
-            />
-            <TextField
-              label="Transfer ID（メモ）"
-              type="number"
-              variant="filled"
-              value={this.state.transferTag}
-              onChange={(e) => this.setState({ transferTag: e.target.value })}
-              fullWidth
-              style={{ marginTop: ".8em", backgroundColor: "white", borderRadius: ".6rem" }}
-            />
-            <TextField
-              label="Deploy Hash"
-              variant="filled"
-              value={this.state.deployHash}
-              disabled
-              fullWidth
-              style={{ marginTop: ".8em", backgroundColor: "white", borderRadius: ".6rem" }}
-            />
+            <CopyableField label="数量 (CSPR)" value={this.state.amount} />
+            <CopyableField label="Transfer ID（メモ）" value={this.state.transferTag} />
+            <CopyableField label="Transaction Hash" value={this.state.deployHash} />
+            <CopyableField label="Signature" value={this.formatSignature(this.state.signature)} />
             <Button
               variant="contained"
               color="secondary"
               onClick={this.signDeploy}
-              disabled={!this.state.walletConnected || this.state.signerLocked}
+              disabled={!this.state.walletConnected || this.state.walletLocked}
               fullWidth
               style={{ marginTop: "2rem", backgroundColor: "blue" }}
             >
               署名 & デプロイ
             </Button>
           </form>
-
-          {this.state.deployProcessed && (
-            <>
-              <Typography style={{ marginTop: "1rem", wordBreak: "break-word" }}>
-                Deploy Hash: {this.state.deployHash}
-              </Typography>
-              <Typography>Signature: {this.state.signature}</Typography>
-            </>
-          )}
         </header>
       </div>
     );
