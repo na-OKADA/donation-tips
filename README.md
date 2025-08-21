@@ -12,7 +12,7 @@ const ENDPOINT = "https://node.testnet.casper.network/rpc"
 
 次に、NETWORK_NAMEは"casper-test"に設定します。
 
-```SignerTest.js
+```WalletTest.js
 const NETWORK_NAME = "casper-test";
 ```
 
@@ -24,7 +24,7 @@ $ npm i
 $ npm start
 ```
 
-また、src/SignerTest.jsの、下記部分は'casper-test'に設定します。
+また、src/WalletTest.jsの、下記部分は'casper-test'に設定します。
 
 ```SignerTest.js
 .chainName('casper-test')
@@ -51,13 +51,13 @@ const ENDPOINT = "http://localhost:11103/rpc"
 ```
 
 次に、NETWORK_NAMEを"casper-net-1"に設定します。
-```SignerTest.js
+```WalletTest.js
 let networkName = "casper-net-1";
 ```
 
-また、src/SignerTest.jsの、下記部分は'casper-net-1'に設定します。
+また、src/WalletTest.jsの、下記部分は'casper-net-1'に設定します。
 
-```SignerTest.js
+```WalletTest.js
 const NETWORK_NAME = "casper-net-1";
 ```
 
@@ -91,7 +91,7 @@ $ yarn start
 
 senderをfaucetアカウントとし、受取人をuser-1に指定して実行を行います。
 
-動作確認を行うには、表示されたDeploy Hashを使用して、デプロイ情報の取得を行います。
+動作確認を行うには、表示されたTransaction Hashを使用して、デプロイ情報の取得を行います。
 
 ``` bash
 $ casper-client get-transaction --node-address http://localhost:11101 $TRANSACTION_HASH
