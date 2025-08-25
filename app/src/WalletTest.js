@@ -99,6 +99,13 @@ export default class WalletTest extends React.Component {
 
     events.forEach(([evt, fn]) => {
       window.addEventListener(evt, (msg) => this.setState({ ...fn(msg.detail), showAlert: true }));
+      window.addEventListener("casper-wallet:activeKeyChanged", (detail) => {
+        this.setState({
+          activeKey: detail.publicKey,
+          currentNotification: { text: "Active Key Changed", severity: "info" },
+          showAlert: true,
+        });
+      });
     });
   }
 
@@ -114,6 +121,29 @@ export default class WalletTest extends React.Component {
       this.setState({ walletConnected: true, walletLocked: false, activeKey: pub, currentNotification: { text: "Connected", severity: "success" }, showAlert: true });
     } catch (err) {
       this.setState({ currentNotification: { text: err.message, severity: "error" }, showAlert: true });
+    }
+  };
+
+  switchActiveKey = async () => {
+    try {
+      const provider = window.CasperWalletProvider && window.CasperWalletProvider();
+      if (!provider || typeof provider.requestSwitchAccount !== "function") {
+        throw new Error("Casper Wallet extension not found or provider is invalid.");
+      }
+
+      await provider.requestSwitchAccount(); 
+      const newKey = await provider.getActivePublicKey(); 
+
+      this.setState({
+        activeKey: newKey,
+        currentNotification: { text: "Switched to new key", severity: "success" },
+        showAlert: true,
+      });
+    } catch (err) {
+      this.setState({
+        currentNotification: { text: err.message, severity: "error" },
+        showAlert: true,
+      });
     }
   };
 
@@ -265,6 +295,16 @@ export default class WalletTest extends React.Component {
               Connect Casper Wallet
             </Button>
           )}
+          {this.state.walletConnected && !this.state.walletLocked && (
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={this.switchActiveKey}
+              style={{ marginTop: "1rem" }}
+            >
+              Switch Active Key
+            </Button>
+            )}
 
           <form>
             <TextField
