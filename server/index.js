@@ -1,72 +1,95 @@
 import express from "express";
 import cors from "cors";
+import pkg from "casper-js-sdk"; // CJS -> default import, then destructure
+const { HttpHandler, RpcClient, Transaction, PublicKey, PurseIdentifier } = pkg;
+import 'dotenv/config';
+
 const app = express();
-
-import pkg_body_parser from 'body-parser';
-const { json, urlencoded } = pkg_body_parser;
 app.use(cors());
+app.use(express.json());
 
-app.use(json({ limit: "30mb", extended: true }));
-app.use(urlencoded({ limit: "30mb", extended: true }));
+// Configure endpoints (env overrides optional)
+const NETWORKS = {
+  nctl: {
+    rpcUrl: process.env.CASPER_NCTL || "http://localhost:11101/rpc",
+    chainName: "casper-net-1",
+  },
+  testnet: {
+    rpcUrl: process.env.CASPER_TESTNET || "https://rpc.testnet.cspr.cloud",
+    chainName: "casper-test",
+  },
+  mainnet: {
+    rpcUrl: process.env.CASPER_MAINNET || "https://rpc.mainnet.cspr.cloud",
+    chainName: "casper",
+  },
+};
 
-import pkg from 'casper-js-sdk'
-const { HttpHandler, RpcClient, Transaction, PurseIdentifier, PublicKey } = pkg;
+function getClient(networkKey) {
+  const net = NETWORKS[networkKey];
+  if (!net) return null;
 
-// const ENDPOINT = "https://node.testnet.casper.network/rpc"
-const ENDPOINT = "http://localhost:11103/rpc"
-const rpcHandler = new HttpHandler(ENDPOINT);
-const rpcClient = new RpcClient(rpcHandler);
+  console.log("Using network:", networkKey);
+  console.log("Using RPC URL:", net.rpcUrl);
+  console.log("Using API Key:", process.env.CSPR_CLOUD_API_KEY);
 
-const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
+  const handler = new HttpHandler(net.rpcUrl);
 
-app.post("/", async (req, res) => {
-    let { signedTransactionJSON } = req.body;
+  if (
+    process.env.CSPR_CLOUD_API_KEY &&
+    net.rpcUrl === "https://node.testnet.cspr.cloud/rpc"
+  ) {
+    handler.setCustomHeaders({
+      Authorization: process.env.CSPR_CLOUD_API_KEY,
+    });
+  }
 
-    const transactionFromJson = Transaction.fromJSON(signedTransactionJSON);
+  return new RpcClient(handler);
+}
 
-    await sleep(1000);
+app.get("/", (_req, res) => res.json({ ok: true }));
 
-    let result;
-    try {
-        result = await rpcClient.putTransaction(transactionFromJson);
-        // Check if result and transactionHash exist
-        if (!result || !result.transactionHash) {
-            return res.status(500).json({
-                error: "Transaction failed or no transactionHash returned.",
-                details: result
-            });
-        }
-        res.status(200).send(result.transactionHash);
-    } catch (e) {
-        console.error(e);
-        res.status(500).json({
-            error: "Error submitting transaction.",
-            details: e.message || e.toString()
-        });
+app.post("/deploy/:network", async (req, res) => {
+  const { network } = req.params;
+  const client = getClient(network);
+  if (!client) return res.status(400).json({ error: "Invalid network" });
+
+  const { signedTransactionJSON } = req.body;
+  if (!signedTransactionJSON) {
+    return res.status(400).json({ error: "Missing signedTransactionJSON in body" });
+  }
+
+  let tx;
+  try {
+    tx = Transaction.fromJSON(signedTransactionJSON);
+  } catch (e) {
+    console.error("Transaction.fromJSON failed:", e);
+    return res.status(400).json({ error: "Bad signedTransactionJSON", details: e.message });
+  }
+
+  try {
+    const result = await client.putTransaction(tx);
+    console.log("RPC result:", result);
+
+    if (!result || !result.transactionHash) {
+      return res.status(502).json({
+        error: "RPC putTransaction did not return transactionHash",
+        details: result,
+      });
     }
+
+    res.send(result.transactionHash);
+  } catch (e) {
+    console.error("putTransaction error:", e?.response?.data || e?.data || e?.message || e);
+    res.status(502).json({
+      error: "Error submitting transaction",
+      details: e?.response?.data || e?.data || e?.message || String(e),
+    });
+  }
 });
 
-app.post("/balance", async (req, res) => {
-    let { publicKeyHex } = req.body;
-
-
-    try {
-        const publicKey = PublicKey.fromHex(publicKeyHex);
-        const purseIdentifier = PurseIdentifier.fromPublicKey(publicKey);
-
-        const balance = await rpcClient.queryLatestBalance(purseIdentifier);
-
-        console.log("here")
-        console.log(balance);
-        res.status(200).send(balance.rawJSON.balance);
-    } catch (error) {
-        console.log("there")
-        console.log(error);
-        res.status(500).json({
-            error: "There is no balance for the account",
-            details: error.message || error.toString()
-        })
-    }
-});
-
-app.listen(9000, () => console.log("running on port 9000..."));
+const PORT = process.env.PORT || 9000;
+app.listen(PORT, () =>
+  console.log(
+    `🚀 running on port ${PORT} — networks: ${Object.keys(NETWORKS).join(", ")}`
+  )
+);
