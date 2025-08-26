@@ -9,7 +9,6 @@ import {
   IconButton,
   InputAdornment,
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
   Box,
@@ -51,7 +50,7 @@ export default class WalletTest extends React.Component {
   constructor() {
     super();
     this.state = {
-      network: "testnet",
+      network: "Select Network",
       walletConnected: false,
       walletLocked: true,
       activeKey: "",
@@ -233,32 +232,7 @@ export default class WalletTest extends React.Component {
 
   render() {
     return (
-      <div className="App">
-        {/* Dropdown to select network */}
-        <Box sx={{ mb: 1, minWidth: 200 }}>
-          <FormControl fullWidth variant="outlined">
-            <InputLabel id="network-select-label" style={{ marginTop: "25px", fontWeight: "bold" }}>
-              Select Network
-            </InputLabel>
-            <Select
-              labelId="network-select-label"
-              value={this.state.network}
-              onChange={(e) => this.setState({ network: e.target.value })}
-              label="Network"
-              sx={{
-                borderRadius: 4,
-                bgcolor: "white",
-              }}
-            >
-              {Object.entries(NETWORKS).map(([key, cfg]) => (
-                <MenuItem key={key} value={key}>
-                  {cfg.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
-        
+      <div className="App">     
         <Snackbar
           open={this.state.showAlert}
           autoHideDuration={6000}
@@ -279,32 +253,63 @@ export default class WalletTest extends React.Component {
 
         <header className="App-header">
           <Typography variant="h2">寄付・チップ</Typography>
-          {this.state.walletConnected ? (
-            this.state.walletLocked ? (
+          {/* Wallet connection row */}
+          {this.state.walletConnected && !this.state.walletLocked ? (
+            <Typography sx={{ mt: 2, mb: 1 }}>
+              Connected: {this.state.activeKey}
+            </Typography>
+          ) : null}
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 1 }}>
+            {!this.state.walletConnected ? (
+              <Button variant="contained" onClick={this.connectToCasperWallet}>
+                Connect Casper Wallet
+              </Button>
+            ) : this.state.walletLocked ? (
               <Typography>Please unlock Casper Wallet.</Typography>
             ) : (
               <>
-                <Typography>Connected: {this.state.activeKey}</Typography>
-                {this.state.balance !== null && (
-                  <Typography>Balance: {this.state.balance} CSPR</Typography>
-                )}
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={this.switchActiveKey}
+                >
+                  Switch Active Key
+                </Button>
+
+                <FormControl sx={{ minWidth: 250 }} size="small">
+                  <Select
+                    value={this.state.network || ""}
+                    onChange={(e) => this.setState({ network: e.target.value })}
+                    displayEmpty
+                    renderValue={(selected) => {
+                      if (!selected) return <span style={{ textAlign: "center", width: "100%" }}>SELECT NETWORK</span>;
+                      return selected;
+                    }}
+                    sx={{
+                      border: "1px solid black",   
+                      borderRadius: 2,            
+                      bgcolor: "white",
+                      fontSize: "1rem",
+                      height: 40,
+                      textAlign: "center",
+                      "& .MuiSelect-select": {
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      },
+                    }}
+                  >
+                    {Object.entries(NETWORKS).map(([key, cfg]) => (
+                      <MenuItem key={key} value={key}>
+                        {cfg.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </>
-            )
-          ) : (
-            <Button variant="contained" onClick={this.connectToCasperWallet}>
-              Connect Casper Wallet
-            </Button>
-          )}
-          {this.state.walletConnected && !this.state.walletLocked && (
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={this.switchActiveKey}
-              style={{ marginTop: "1rem" }}
-            >
-              Switch Active Key
-            </Button>
             )}
+          </Box>
 
           <form>
             <TextField
