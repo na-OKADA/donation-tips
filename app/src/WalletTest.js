@@ -1,5 +1,5 @@
-import React from "react";
-import "./WalletTest.css";
+import React from 'react';
+import './WalletTest.css';
 import {
   Alert,
   Button,
@@ -12,14 +12,15 @@ import {
   Select,
   MenuItem,
   Box,
-} from "@mui/material";
-import { NativeTransferBuilder, PublicKey, TransactionV1 } from "casper-js-sdk";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+} from '@mui/material';
+import { NativeTransferBuilder, PublicKey, TransactionV1 } from 'casper-js-sdk';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import PropTypes from 'prop-types';
 
 const NETWORKS = {
-  nctl: { name: "NCTL", chainName: "casper-net-1" },
-  testnet: { name: "Testnet", chainName: "casper-test" },
-  mainnet: { name: "Mainnet", chainName: "casper" },
+  nctl: { name: 'NCTL', chainName: 'casper-net-1' },
+  testnet: { name: 'Testnet', chainName: 'casper-test' },
+  mainnet: { name: 'Mainnet', chainName: 'casper' },
 };
 
 const CopyableField = ({ label, value }) => (
@@ -29,15 +30,16 @@ const CopyableField = ({ label, value }) => (
     value={value}
     disabled
     fullWidth
-    style={{ marginTop: ".8em", backgroundColor: "white", borderRadius: ".6rem", wordBreak: "break-word" }}
+    style={{
+      marginTop: '.8em',
+      backgroundColor: 'white',
+      borderRadius: '.6rem',
+      wordBreak: 'break-word',
+    }}
     InputProps={{
       endAdornment: (
         <InputAdornment position="end">
-          <IconButton
-            onClick={() => navigator.clipboard.writeText(value)}
-            edge="end"
-            size="small"
-          >
+          <IconButton onClick={() => navigator.clipboard.writeText(value)} edge="end" size="small">
             <ContentCopyIcon />
           </IconButton>
         </InputAdornment>
@@ -46,20 +48,25 @@ const CopyableField = ({ label, value }) => (
   />
 );
 
+CopyableField.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+};
+
 export default class WalletTest extends React.Component {
   constructor() {
     super();
     this.state = {
-      network: "Select Network",
+      network: 'Select Network',
       walletConnected: false,
       walletLocked: true,
-      activeKey: "",
-      recipient: "",
-      amount: "2.5",
-      transferTag: "0",
-      deployHash: "",
-      signature: "",
-      currentNotification: { text: "", severity: "info" },
+      activeKey: '',
+      recipient: '',
+      amount: '2.5',
+      transferTag: '0',
+      deployHash: '',
+      signature: '',
+      currentNotification: { text: '', severity: 'info' },
       showAlert: false,
       deployProcessed: false,
       balance: null,
@@ -67,8 +74,11 @@ export default class WalletTest extends React.Component {
   }
 
   formatSignature(sig) {
-    if (!sig) return "";
-    if (sig instanceof Uint8Array) return Array.from(sig).map((b) => b.toString(16).padStart(2, "0")).join("");
+    if (!sig) return '';
+    if (sig instanceof Uint8Array)
+      return Array.from(sig)
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
     return sig;
   }
 
@@ -82,26 +92,62 @@ export default class WalletTest extends React.Component {
             const pub = await provider.getActivePublicKey();
             this.setState({ walletConnected: true, walletLocked: false, activeKey: pub });
           } catch (err) {
-            console.error(err?.message?.toLowerCase().includes("locked") ? "Wallet is locked." : err);
+            console.error(
+              err?.message?.toLowerCase().includes('locked') ? 'Wallet is locked.' : err
+            );
           }
         }
       });
     }
 
     const events = [
-      ["casper-wallet:connected", (detail) => ({ walletConnected: true, walletLocked: false, activeKey: detail.publicKey, currentNotification: { text: "Connected", severity: "success" } })],
-      ["casper-wallet:unlocked", () => ({ walletLocked: false, currentNotification: { text: "Wallet Unlocked", severity: "info" } })],
-      ["casper-wallet:disconnected", () => ({ walletConnected: false, walletLocked: true, activeKey: "", currentNotification: { text: "Disconnected", severity: "info" } })],
-      ["casper-wallet:locked", () => ({ walletLocked: true, currentNotification: { text: "Wallet Locked", severity: "warning" } })],
-      ["casper-wallet:activeKeyChanged", (detail) => ({ activeKey: detail.publicKey, currentNotification: { text: "Active Key Changed", severity: "info" } })],
+      [
+        'casper-wallet:connected',
+        (detail) => ({
+          walletConnected: true,
+          walletLocked: false,
+          activeKey: detail.publicKey,
+          currentNotification: { text: 'Connected', severity: 'success' },
+        }),
+      ],
+      [
+        'casper-wallet:unlocked',
+        () => ({
+          walletLocked: false,
+          currentNotification: { text: 'Wallet Unlocked', severity: 'info' },
+        }),
+      ],
+      [
+        'casper-wallet:disconnected',
+        () => ({
+          walletConnected: false,
+          walletLocked: true,
+          activeKey: '',
+          currentNotification: { text: 'Disconnected', severity: 'info' },
+        }),
+      ],
+      [
+        'casper-wallet:locked',
+        () => ({
+          walletLocked: true,
+          currentNotification: { text: 'Wallet Locked', severity: 'warning' },
+        }),
+      ],
+      [
+        'casper-wallet:activeKeyChanged',
+        (detail) => ({
+          activeKey: detail.publicKey,
+          currentNotification: { text: 'Active Key Changed', severity: 'info' },
+        }),
+      ],
     ];
 
     events.forEach(([evt, fn]) => {
       window.addEventListener(evt, (msg) => this.setState({ ...fn(msg.detail), showAlert: true }));
-      window.addEventListener("casper-wallet:activeKeyChanged", (detail) => {
+      window.addEventListener('casper-wallet:activeKeyChanged', (detail) => {
         this.setState({
           activeKey: detail.publicKey,
-          currentNotification: { text: "Active Key Changed", severity: "info" },
+          currentNotification: { text: 'Active Key Changed', severity: 'info' },
           showAlert: true,
         });
       });
@@ -112,35 +158,45 @@ export default class WalletTest extends React.Component {
 
   connectToCasperWallet = async () => {
     try {
-      if (typeof window.CasperWalletProvider !== "function") throw new Error("Casper Wallet not installed");
+      if (typeof window.CasperWalletProvider !== 'function')
+        throw new Error('Casper Wallet not installed');
 
       const provider = window.CasperWalletProvider();
       await provider.requestConnection();
       const pub = await provider.getActivePublicKey();
-      this.setState({ walletConnected: true, walletLocked: false, activeKey: pub, currentNotification: { text: "Connected", severity: "success" }, showAlert: true });
+      this.setState({
+        walletConnected: true,
+        walletLocked: false,
+        activeKey: pub,
+        currentNotification: { text: 'Connected', severity: 'success' },
+        showAlert: true,
+      });
     } catch (err) {
-      this.setState({ currentNotification: { text: err.message, severity: "error" }, showAlert: true });
+      this.setState({
+        currentNotification: { text: err.message, severity: 'error' },
+        showAlert: true,
+      });
     }
   };
 
   switchActiveKey = async () => {
     try {
       const provider = window.CasperWalletProvider && window.CasperWalletProvider();
-      if (!provider || typeof provider.requestSwitchAccount !== "function") {
-        throw new Error("Casper Wallet extension not found or provider is invalid.");
+      if (!provider || typeof provider.requestSwitchAccount !== 'function') {
+        throw new Error('Casper Wallet extension not found or provider is invalid.');
       }
 
-      await provider.requestSwitchAccount(); 
-      const newKey = await provider.getActivePublicKey(); 
+      await provider.requestSwitchAccount();
+      const newKey = await provider.getActivePublicKey();
 
       this.setState({
         activeKey: newKey,
-        currentNotification: { text: "Switched to new key", severity: "success" },
+        currentNotification: { text: 'Switched to new key', severity: 'success' },
         showAlert: true,
       });
     } catch (err) {
       this.setState({
-        currentNotification: { text: err.message, severity: "error" },
+        currentNotification: { text: err.message, severity: 'error' },
         showAlert: true,
       });
     }
@@ -152,8 +208,8 @@ export default class WalletTest extends React.Component {
     const amountCSPR = parseFloat(this.state.amount);
     const transferId = this.state.transferTag ? parseInt(this.state.transferTag) : undefined;
 
-    if (!senderKeyHex || !recipientKeyHex) throw new Error("Sender or recipient key missing.");
-    if (isNaN(amountCSPR) || amountCSPR <= 0) throw new Error("Invalid transfer amount.");
+    if (!senderKeyHex || !recipientKeyHex) throw new Error('Sender or recipient key missing.');
+    if (isNaN(amountCSPR) || amountCSPR <= 0) throw new Error('Invalid transfer amount.');
 
     const senderKey = PublicKey.fromHex(senderKeyHex);
     const recipientKey = PublicKey.fromHex(recipientKeyHex);
@@ -173,8 +229,9 @@ export default class WalletTest extends React.Component {
 
   getSignatureWithPrefix = (publicKeyHex, res) => {
     const publicKeyBytes = PublicKey.fromHex(publicKeyHex).key.bytes();
-    let prefix = publicKeyBytes.length === 32 ? 0x01 : publicKeyBytes.length === 33 ? 0x02 : undefined;
-    if (!prefix) throw new Error("Unexpected publicKeyBytes length: " + publicKeyBytes.length);
+    let prefix =
+      publicKeyBytes.length === 32 ? 0x01 : publicKeyBytes.length === 33 ? 0x02 : undefined;
+    if (!prefix) throw new Error('Unexpected publicKeyBytes length: ' + publicKeyBytes.length);
 
     const signatureWithPrefix = new Uint8Array(res.signature.length + 1);
     signatureWithPrefix[0] = prefix;
@@ -185,11 +242,15 @@ export default class WalletTest extends React.Component {
   signDeploy = async () => {
     let provider;
     try {
-      if (typeof window.CasperWalletProvider !== "function") throw new Error("Casper Wallet not detected");
+      if (typeof window.CasperWalletProvider !== 'function')
+        throw new Error('Casper Wallet not detected');
       provider = window.CasperWalletProvider();
-      if (!(await provider.isConnected())) throw new Error("Wallet not connected");
+      if (!(await provider.isConnected())) throw new Error('Wallet not connected');
     } catch (err) {
-      this.setState({ currentNotification: { text: err.message, severity: "error" }, showAlert: true });
+      this.setState({
+        currentNotification: { text: err.message, severity: 'error' },
+        showAlert: true,
+      });
       return;
     }
 
@@ -198,47 +259,54 @@ export default class WalletTest extends React.Component {
       const transactionJSON = transaction.toJSON();
 
       const res = await provider.sign(JSON.stringify(transactionJSON), this.state.activeKey);
-      if (res.cancelled) throw new Error("Signing cancelled by user.");
+      if (res.cancelled) throw new Error('Signing cancelled by user.');
 
       const signatureWithPrefix = this.getSignatureWithPrefix(this.state.activeKey, res);
-      const signedDeploy = TransactionV1.setSignature(transaction, signatureWithPrefix, PublicKey.fromHex(this.state.activeKey));
+      const signedDeploy = TransactionV1.setSignature(
+        transaction,
+        signatureWithPrefix,
+        PublicKey.fromHex(this.state.activeKey)
+      );
       const signedDeployJson = signedDeploy.toJSON();
 
       const response = await fetch(`http://localhost:9000/deploy/${this.state.network}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ signedTransactionJSON: signedDeployJson }),
       });
 
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.error || "Failed to send transaction");
+        throw new Error(err.error || 'Failed to send transaction');
       }
 
       const deployHashRaw = await response.text();
-      const deployHash = deployHashRaw.replace(/^"|"$/g, "");
+      const deployHash = deployHashRaw.replace(/^"|"$/g, '');
 
-      this.setState({ 
-        deployProcessed: true, 
-        deployHash, 
-        signature: signatureWithPrefix, 
-        currentNotification: { text: `Deploy sent: ${deployHash}`, severity: "success" }, 
-        showAlert: true 
+      this.setState({
+        deployProcessed: true,
+        deployHash,
+        signature: signatureWithPrefix,
+        currentNotification: { text: `Deploy sent: ${deployHash}`, severity: 'success' },
+        showAlert: true,
       });
     } catch (err) {
-      this.setState({ currentNotification: { text: err.message || String(err), severity: "error" }, showAlert: true });
+      this.setState({
+        currentNotification: { text: err.message || String(err), severity: 'error' },
+        showAlert: true,
+      });
     }
   };
 
   render() {
     return (
-      <div className="App">     
+      <div className="App">
         <Snackbar
           open={this.state.showAlert}
           autoHideDuration={6000}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
           onClose={(_, reason) => {
-            if (reason !== "clickaway") {
+            if (reason !== 'clickaway') {
               this.toggleAlert(false);
             }
           }}
@@ -255,12 +323,10 @@ export default class WalletTest extends React.Component {
           <Typography variant="h2">寄付・チップ</Typography>
           {/* Wallet connection row */}
           {this.state.walletConnected && !this.state.walletLocked ? (
-            <Typography sx={{ mt: 2, mb: 1 }}>
-              Connected: {this.state.activeKey}
-            </Typography>
+            <Typography sx={{ mt: 2, mb: 1 }}>Connected: {this.state.activeKey}</Typography>
           ) : null}
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
             {!this.state.walletConnected ? (
               <Button variant="contained" onClick={this.connectToCasperWallet}>
                 Connect Casper Wallet
@@ -269,34 +335,33 @@ export default class WalletTest extends React.Component {
               <Typography>Please unlock Casper Wallet.</Typography>
             ) : (
               <>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  onClick={this.switchActiveKey}
-                >
+                <Button variant="outlined" color="primary" onClick={this.switchActiveKey}>
                   Switch Active Key
                 </Button>
 
                 <FormControl sx={{ minWidth: 250 }} size="small">
                   <Select
-                    value={this.state.network || ""}
+                    value={this.state.network || ''}
                     onChange={(e) => this.setState({ network: e.target.value })}
                     displayEmpty
                     renderValue={(selected) => {
-                      if (!selected) return <span style={{ textAlign: "center", width: "100%" }}>SELECT NETWORK</span>;
+                      if (!selected)
+                        return (
+                          <span style={{ textAlign: 'center', width: '100%' }}>SELECT NETWORK</span>
+                        );
                       return selected;
                     }}
                     sx={{
-                      border: "1px solid black",   
-                      borderRadius: 2,            
-                      bgcolor: "white",
-                      fontSize: "1rem",
+                      border: '1px solid black',
+                      borderRadius: 2,
+                      bgcolor: 'white',
+                      fontSize: '1rem',
                       height: 40,
-                      textAlign: "center",
-                      "& .MuiSelect-select": {
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
+                      textAlign: 'center',
+                      '& .MuiSelect-select': {
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       },
                     }}
                   >
@@ -318,7 +383,7 @@ export default class WalletTest extends React.Component {
               value={this.state.recipient}
               onChange={(e) => this.setState({ recipient: e.target.value })}
               fullWidth
-              style={{ marginTop: ".8em", backgroundColor: "white", borderRadius: ".6rem" }}
+              style={{ marginTop: '.8em', backgroundColor: 'white', borderRadius: '.6rem' }}
             />
             <CopyableField label="数量 (CSPR)" value={this.state.amount} />
             <CopyableField label="Transfer ID（メモ）" value={this.state.transferTag} />
@@ -330,7 +395,7 @@ export default class WalletTest extends React.Component {
               onClick={this.signDeploy}
               disabled={!this.state.walletConnected || this.state.walletLocked}
               fullWidth
-              style={{ marginTop: "2rem", backgroundColor: "blue" }}
+              style={{ marginTop: '2rem', backgroundColor: 'blue' }}
             >
               署名 & デプロイ
             </Button>
