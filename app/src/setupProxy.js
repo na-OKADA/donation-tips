@@ -1,25 +1,25 @@
-const { createProxyMiddleware } = require("http-proxy-middleware");
+const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function (app) {
   app.use(
-    "/testnet",
+    '/testnet',
     createProxyMiddleware({
-      target: "https://node.testnet.casper.network",
+      target: 'https://node.testnet.casper.network',
       changeOrigin: true,
       pathRewrite: {
-        "^/testnet": "/rpc",
+        '^/testnet': '/rpc',
       },
-    }),
+    })
   );
 
   app.use(
-    "/nctl",
+    '/nctl',
     createProxyMiddleware({
-      target: "http://localhost:11101",
+      target: 'http://localhost:11101',
       changeOrigin: true,
       pathRewrite: {
-        "^/nctl": "/rpc",
+        '^/nctl': '/rpc',
       },
-    }),
+    })
   );
 };

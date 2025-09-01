@@ -1,16 +1,24 @@
 {
   "name": "donation-tips",
+  "version": "1.0.0",
+  "type": "module",
   "private": true,
   "workspaces": [
     "app",
     "server"
   ],
   "scripts": {
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "format": "prettier --write ."
+    "lint": "eslint server/**/*.{js,ts,jsx,tsx}  app/src/**/*.{js,ts,jsx,tsx}",
+    "format": "prettier --write 'server/**/*.{js,ts,jsx,tsx,json,css,scss}' 'app/src/**/*.{js,ts,jsx,tsx,json,css,scss}'"
   },
   "devDependencies": {
+    "@babel/core": "^7.28.3",
+    "@babel/eslint-parser": "^7.28.0",
+    "@babel/preset-react": "^7.27.1",
     "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "prettier": "^3.0.0"
   }
 }
