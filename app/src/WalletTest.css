@@ -11,8 +11,33 @@
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+  padding: 2rem;
 }
 
 .App-header > * {
   max-width: 80%;
+}
+
+/* Local class for form */
+.formContainer {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+/* Local class for buttons */
+.buttonSpacing {
+  margin-top: 1rem;
+}
+
+/* CopyableField styling */
+.MuiTextField-root {
+  margin-top: 0.8rem;
+  background-color: white;
+  border-radius: 0.6rem;
+}
+
+/* Optional: adjust Snackbar alert text */
+.MuiAlert-message {
+  word-break: break-word;
+  text-align: center;
 }

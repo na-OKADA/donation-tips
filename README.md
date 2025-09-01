@@ -3,6 +3,7 @@
 Casper Walletによるtransferを行うことができます。
 
 ## Testnetでの実行方法
+
 以下のコマンドでserverを起動します。
 
 ```bash
@@ -12,13 +13,14 @@ npm start
 ```
 
 .envファイルを設定していることを前提としています。
+
 ```bash
 CASPER_NCTL=http://localhost:11103/rpc
 CASPER_TESTNET=https://node.testnet.cspr.cloud/rpc
 CSPR_CLOUD_API_KEY=01917755-xxxx-Your-Own-APIKEY  <--CSPR.cloud KEY*を設定
 ```
-※https://cspr.build/ にて登録できます。
 
+※https://cspr.build/ にて登録できます。
 
 また、以下のコマンドで、Reactフロントエンドアプリケーションを起動します。
 
@@ -67,7 +69,7 @@ senderをfaucetアカウントとし、受取人をuser-1に指定して実行�
 
 動作確認を行うには、表示されたTransaction Hashを使用して、デプロイ情報の取得を行います。
 
-``` bash
+```bash
 casper-client get-transaction --node-address http://localhost:11101 $TRANSACTION_HASH
 ```
 

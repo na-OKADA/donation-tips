@@ -83,7 +83,7 @@ export default class WalletTest extends React.Component {
   }
 
   componentDidMount() {
-    const provider = window.CasperWalletProvider;
+    const provider = window.CasperWalletProvider && window.CasperWalletProvider();
 
     if (provider) {
       provider.isConnected().then(async (connected) => {
